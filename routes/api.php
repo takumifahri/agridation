@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\API\AuthControllerAPI;
 use App\Http\Controllers\API\CompetitionControllerAPI;
+use App\Http\Controllers\API\ContactControllerAPI;
 use App\Http\Controllers\API\TeamControllerAPI;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -47,4 +48,17 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/viewInvitations', [TeamControllerAPI::class, 'get_pending_invitations']);
         Route::delete('/delete/{id}', [TeamControllerAPI::class, 'delete_team_invitation']);
     });
+  
+    
+});
+
+Route::prefix('/contactus')->group(function () {
+    // Add your contact us routes here
+    Route::middleware(['auth:sanctum'])->group(function () {
+        Route::get('/', [ContactControllerAPI::class, 'index']);
+        Route::get('/show/{id}', [ContactControllerAPI::class, 'show']);
+        Route::delete('/delete/{id}', [ContactControllerAPI::class, 'destroy']);
+    });
+
+    Route::post('/send', [ContactControllerAPI::class, 'store']);
 });
