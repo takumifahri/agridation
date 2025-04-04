@@ -38,7 +38,7 @@ class ContactEmail extends Mailable
         
         return $this->view('emails.contact') // HTML version
                     ->text('emails.contact-plain') // Plain text version
-                    ->subject('Pesan Baru dari Form Kontak')
+                    ->subject("Inquiry from {$this->contact->name} – Looking Forward to Your Response\n\n")
                     ->with([
                         'messageText' => $text
                     ]);

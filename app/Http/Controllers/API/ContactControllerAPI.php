@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Mail\AutoResponse;
 use App\Mail\ContactEmail;
 use App\Models\ContactUs;
 use App\Models\User;
@@ -39,51 +40,54 @@ class ContactControllerAPI extends Controller
      * Show the form for creating a new resource.
      */
     public function store(Request $request)
-    {
-        try{
-            $validate =$request->validate([
-                'name' => 'required',
-                'email' => 'required|email',
-                'phone' => 'required',
-                'subject' => 'required',
-                'message' => 'required',
-            ],
-            [
-                'name.required' => 'Nama harus diisi',
-                'email.required' => 'Email harus diisi',
-                'email.email' => 'Email tidak valid',
-                'subject.required' => 'Subjek harus diisi',
-                'phone.required' => 'Nomor HP harus diisi',
-                'message.required' => 'Pesan harus diisi',
-            ]);
-    
-            // Save to database
-            $contact = ContactUs::create([
-                'name' => $validate['name'],
-                'email' => $validate['email'],
-                'phone' => $validate['phone'],
-                'subject' => $validate['subject'],
-                'message' => $validate['message'],
-            ]);
-    
-              // Menggunakan alamat email yang telah ditentukan
-            $reciever = config('contact.recipient_email', 'fahri.radiansyah@gmail.com');
-            // Send email notification
-            Mail::to($reciever)->send(new ContactEmail($contact));
-    
-            return response()->json([
-                'message' => 'Pesan berhasil dikirim',
-                'data' => $contact,
-                'status' => 'success'
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => $e->getMessage(),
-                'status' => 'error'
-            ], 500);
-        }   
+{
+    try{
+        $validate = $request->validate([
+            'name' => 'required',
+            'email' => 'required|email',
+            'phone' => 'required',
+            'subject' => 'required',
+            'message' => 'required',
+        ],
+        [
+            'name.required' => 'Nama harus diisi',
+            'email.required' => 'Email harus diisi',
+            'email.email' => 'Email tidak valid',
+            'subject.required' => 'Subjek harus diisi',
+            'phone.required' => 'Nomor HP harus diisi',
+            'message.required' => 'Pesan harus diisi',
+        ]);
+
+        // Save to database
+        $contact = ContactUs::create([
+            'name' => $validate['name'],
+            'email' => $validate['email'],
+            'phone' => $validate['phone'],
+            'subject' => $validate['subject'],
+            'message' => $validate['message'],
+        ]);
+
+        // Menggunakan alamat email yang telah ditentukan
+        $reciever = config('contact.recipient_email', 'fahri.radiansyah@gmail.com');
         
-    }
+        // Send email notification to the administrator
+        Mail::to($reciever)->send(new ContactEmail($contact));
+        
+        // Send auto-response back to the user
+        Mail::to($contact->email)->send(new AutoResponse($contact));
+
+        return response()->json([
+            'message' => 'Pesan berhasil dikirim',
+            'data' => $contact,
+            'status' => 'success'
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'message' => $e->getMessage(),
+            'status' => 'error'
+        ], 500);
+    }   
+}
 
 
     /**

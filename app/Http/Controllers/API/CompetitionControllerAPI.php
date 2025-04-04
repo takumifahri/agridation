@@ -13,9 +13,19 @@ class CompetitionControllerAPI extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         //
+
+        $search = $request->query('search');
+        if ($search) {
+            $competitions = master_lomba::where('nama_lomba', 'LIKE', "%{$search}%")
+                ->orWhere('deskripsi', 'LIKE', "%{$search}%")
+                ->get();
+        } else {
+            $competitions = master_lomba::all();
+        }
+        
         try{
             $competitions = master_lomba::all();
             if($competitions->isEmpty()){

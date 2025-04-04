@@ -28,6 +28,7 @@ class User extends Authenticatable
         'asal_sekolah',
         'team_id',
         'role',
+        'google_id',
         'update_at',
         'created_at',
         'deleted_at',

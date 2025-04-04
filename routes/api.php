@@ -16,6 +16,8 @@ Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthControllerAPI::class, 'register']);
     Route::post('/login', [AuthControllerAPI::class, 'login']);
 
+
+    
     Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/logout', [AuthControllerAPI::class, 'logout']);
         ROute::get('/me', [AuthControllerAPI::class, 'me']);

@@ -277,5 +277,25 @@ class TeamControllerAPI extends Controller
     public function destroy(string $id)
     {
         //
+        $user = User::findOrFail(Auth::id());
+        if ($user->isPanitia() || $user->isJuri()) {
+            try {
+                $team = Team::findOrFail($id);
+                $team->delete();
+
+                return response()->json([
+                    'message' => 'Success, data has been soft deleted',
+                ], 200);
+            } catch (\Exception $e) {
+                return response()->json([
+                    'message' => 'Failed',
+                    'error' => $e->getMessage(),
+                ], 400);
+            }
+        } else {
+            return response()->json([
+                'message' => 'Maaf Anda Tidak Memiliki Akses',
+            ], 401);
+        }
     }
 }
