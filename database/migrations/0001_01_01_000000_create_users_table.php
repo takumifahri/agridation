@@ -20,7 +20,7 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->string('phone_number')->nullable();
-            $table->string('asal_sekolah')->nullable();
+            $table->string('asal_instansi')->nullable();
             $table->unsignedBigInteger('team_id')->nullable();
             $table->enum('role', ['peserta', 'panitia', 'juri'])->default('peserta');
             $table->rememberToken();

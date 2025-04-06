@@ -27,21 +27,28 @@ class AuthControllerAPI extends Controller
                 'name' => 'required|string|max:255',
                 'email' => 'required|string|email|max:255|unique:users',
                 'phone_number' => 'nullable|string|max:255',
-                'asal_sekolah' => 'nullable|string|max:255',
+                'asal_instansi' => 'nullable|string|max:255',
                 'role' => 'required|string|in:peserta,panitia,juri',
+                'isAgree' => 'required|boolean',
                 'password' => ['required', 'confirmed', RulesPassword::defaults()],
             ]);
-           
+
+            // Format phone number to wa.me/.62 if provided
+            $formattedPhoneNumber = null;
+            if (!empty($validate['phone_number'])) {
+                $formattedPhoneNumber = preg_replace('/^(0|\+62|021)/', '62', ltrim($validate['phone_number'], '0'));
+                $formattedPhoneNumber = 'https://wa.me/' . $formattedPhoneNumber;
+            }
     
             $user = User::create([
                 'name' => $validate['name'],
                 'email' => $validate['email'],
-                'phone_number' => $validate['phone_number'] ?? null,
-                'asal_sekolah' => $validate['asal_sekolah'] ?? null,
+                'phone_number' => $formattedPhoneNumber,
+                'asal_instansi' => $validate['asal_instansi'] ?? null,
                 'role' => $validate['role'],
+                'isAgree' => $validate['isAgree'],
                 'password' => Hash::make($validate['password']),
             ]);
-    
             event(new Registered($user));
     
             Auth::login($user);
@@ -110,93 +117,6 @@ class AuthControllerAPI extends Controller
         ]);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function me(Request $request)
-    {
-        // Ambil user yang sedang login dari request
-        $user = $request->user();
-            
-        // Jika tidak ada user yang login, kembalikan error
-        if (!$user) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Unauthenticated'
-            ], 401);
-        }
-        
-        // Tambahkan return statement untuk mengembalikan data user
-        return response()->json([
-            'status' => 'success',
-            'user' => $user
-        ],200);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function updateProfile(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function DeleteAccount(Request $request, string $id)
-    {
-        //
-    }
-
-// Redirect to Google OAuth page
-    // public function redirectToGoogle()
-    // {
-    //     return Socialite::driver('google')->redirect();
-    // }
-
-        
-    // // Handle the callback from Google
-   
-    // public function handleGoogleCallback()
-    // {
-    //     try {
-    //         $googleUser = Socialite::driver('google')->user(); // buat real production
-            
-    //         $user = User::updateOrCreate(
-    //             ['email' => $googleUser->email],
-    //             [
-    //                 'name' => $googleUser->name,
-    //                 'google_id' => $googleUser->id,
-    //                 'role' => 'peserta',
-    //                 'asal_sekolah' => '',
-    //                 'password' => null
-    //             ]
-    //         );
-
-    //         if ($user->wasRecentlyCreated) {
-    //             event(new Registered($user));
-    //         }
-
-    //         Auth::login($user);
-            
-    //         return response()->json([
-    //             'status' => 'success',
-    //             'user' => $user->only('id', 'name', 'email', 'role'),
-    //             'access_token' => $user->createToken('auth_token')->plainTextToken,
-    //             'token_type' => 'Bearer'
-    //         ]);
-
-    //     } catch (\Exception $e) {
-    //         logger()->error('Google Auth Failed: ' . $e->getMessage());
-            
-    //         return response()->json([
-    //             'status' => 'error',
-    //             'message' => 'Autentikasi gagal. Silakan coba lagi.'. $e->getMessage()
-    //         ], 401);
-    //     }
-    // }
-
     public function redirectToGoogle()
     {
         return Socialite::driver('google')
@@ -238,7 +158,7 @@ class AuthControllerAPI extends Controller
                     'google_id' => $googleUser->id,
                     'email_verified_at' => now(), // Mark email as verified
                     'role' => 'peserta',
-                    'asal_sekolah' => '',
+                    'asal_instansi' => '',
                     // 'password' => null,
                     'password' => Hash::make(Str::random(16)), // Optional: Generate a random password
                 ]
@@ -254,23 +174,7 @@ class AuthControllerAPI extends Controller
             $frontendUrl = config('app.frontend_url', 'http://localhost:3000');
             $token = $user->createToken('auth_token')->plainTextToken;
             return redirect("{$frontendUrl}/dashboard");
-            // return response()->json([
-            //     'status' => 'success',
-            //     'user' => [
-            //         'id' => $user->id,
-            //         'name' => $user->name,
-            //         'email' => $user->email,
-            //         'role' => $user->role
-            //     ],
-            //     'access_token' => $user->createToken(
-            //         'google_oauth_token',
-            //         ['*'], // Scopes if needed
-            //         now()->addWeek() // Token expiry
-            //     )->plainTextToken,
-            //     'token_type' => 'Bearer',
-            //     'expires_in' => 60 * 24 * 7 // 1 week in minutes
-            // ]);
-
+           
         } catch (\Exception $e) {
             Log::error('Google Auth Error: ' . $e->getMessage(), [
                 'exception' => $e,

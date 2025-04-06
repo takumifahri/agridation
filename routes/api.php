@@ -3,6 +3,7 @@
 use App\Http\Controllers\API\AuthControllerAPI;
 use App\Http\Controllers\API\CompetitionControllerAPI;
 use App\Http\Controllers\API\ContactControllerAPI;
+use App\Http\Controllers\Api\ProfileControllerAPI;
 use App\Http\Controllers\API\TeamControllerAPI;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -20,7 +21,13 @@ Route::prefix('auth')->group(function () {
     
     Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/logout', [AuthControllerAPI::class, 'logout']);
-        ROute::get('/me', [AuthControllerAPI::class, 'me']);
+
+        //Profile
+        Route::get('/me', [ProfileControllerAPI::class, 'me']);
+        Route::post('/updateProfiles', [ProfileControllerAPI::class, 'updateProfile']);
+        Route::post('/resetPassword', [ProfileControllerAPI::class, 'resetPassword']);
+        Route::post('/updatePassword', [ProfileControllerAPI::class, 'updatePassword']);
+        Route::delete('/delete-account', [ProfileControllerAPI::class, 'deleteAccount']);
     });
 });
 
